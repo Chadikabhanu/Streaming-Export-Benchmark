@@ -1,0 +1,11 @@
+node_modules/
+.env
+*.csv
+*.json
+*.parquet
+download
+ownload
+package-lock.json
+*.csv
+*.json
+*.parquet

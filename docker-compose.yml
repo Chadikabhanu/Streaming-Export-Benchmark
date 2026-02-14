@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgres://user:password@db:5432/exports_db
+      - PORT=8080
+      # PASS REQUIREMENT 10: Forces V8 heap limit below the container limit
+      - NODE_OPTIONS=--max-old-space-size=192
+    deploy:
+      resources:
+        limits:
+          memory: 256M # PASS REQUIREMENT 1: Strict memory limit
+    restart: on-failure
+
+  db:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=exports_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d exports_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
